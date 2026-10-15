@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Run this on the Raspberry Pi 4 itself (not on Windows).
+# Assumes 64-bit Raspberry Pi OS (Bookworm). Check with: uname -m  -> should print aarch64
+set -e
+
+echo "== 1. Update system =="
+sudo apt update && sudo apt upgrade -y
+
+echo "== 2. Install system libraries needed by audio / vision / build packages =="
+sudo apt install -y \
+    python3-venv python3-pip python3-dev \
+    portaudio19-dev libportaudio2 \
+    espeak \
+    libatlas-base-dev libjpeg-dev libopenjp2-7 libtiff6 \
+    libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+    libopenblas-dev
+
+echo "== 3. Create virtual environment =="
+python3 -m venv ~/.venv
+source ~/.venv/bin/activate
+
+echo "== 4. Upgrade pip tooling =="
+pip install --upgrade pip setuptools wheel
+
+echo "== 5. Install the bulk of dependencies (piwheels supplies prebuilt ARM wheels) =="
+pip install -r requirements.txt
+
+echo "== 6. Install torch + torchvision (unpinned, so pip resolves an aarch64-compatible build) =="
+pip install torch torchvision
+
+echo "== Done. Activate with: source ~/.venv/bin/activate =="
